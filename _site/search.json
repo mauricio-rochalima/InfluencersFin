@@ -1,0 +1,72 @@
+[
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Análise de Rede Social",
+    "section": "",
+    "text": "library(\"dplyr\") #for data manipulation\nlibrary(\"igraph\") # for social network analysis\nlibrary(\"ggraph\") \nlibrary(readxl)\nlibrary(tidyverse)\nlibrary(ggraph)\nlibrary(tidygraph)\nlibrary(graphlayouts)\nlibrary(ggplot2)\nlibrary(snahelper)\nlibrary(miniCRAN)\nlibrary(magrittr)\nlibrary(remotes)\nlibrary(intergraph)\nlibrary(Cairo)\nlibrary(ggrepel)\nlibrary(here)"
+  },
+  {
+    "objectID": "index.html#importação-das-bases-de-dados",
+    "href": "index.html#importação-das-bases-de-dados",
+    "title": "Análise de Rede Social",
+    "section": "",
+    "text": "library(\"dplyr\") #for data manipulation\nlibrary(\"igraph\") # for social network analysis\nlibrary(\"ggraph\") \nlibrary(readxl)\nlibrary(tidyverse)\nlibrary(ggraph)\nlibrary(tidygraph)\nlibrary(graphlayouts)\nlibrary(ggplot2)\nlibrary(snahelper)\nlibrary(miniCRAN)\nlibrary(magrittr)\nlibrary(remotes)\nlibrary(intergraph)\nlibrary(Cairo)\nlibrary(ggrepel)\nlibrary(here)"
+  },
+  {
+    "objectID": "index.html#importação-do-bd",
+    "href": "index.html#importação-do-bd",
+    "title": "Análise de Rede Social",
+    "section": "Importação do BD",
+    "text": "Importação do BD\n\nc &lt;-  here(\"BD\",\"EducFin.xlsx\")\n\nedges &lt;- read_excel(c,sheet = \"Edges\", skip = 1)\nvertices &lt;- read_excel(c, sheet = \"Vertices\", skip = 1)\n\nHashtag &lt;- read_excel(c, sheet = \"Overall Metrics\", skip = 1)\nHashtag &lt;- toString(Hashtag[30,2])"
+  },
+  {
+    "objectID": "index.html#excluir-da-tabela-os-tweets-nodexl",
+    "href": "index.html#excluir-da-tabela-os-tweets-nodexl",
+    "title": "Análise de Rede Social",
+    "section": "Excluir da tabela os tweets NodeXL",
+    "text": "Excluir da tabela os tweets NodeXL\n\ntweets &lt;- edges\ntweets &lt;- filter(tweets,tweets$Relationship!=\"Tweet\")\ntweets &lt;- filter(tweets,tweets$Language==\"pt\")"
+  },
+  {
+    "objectID": "index.html#criação-da-matriz-com-as-arestas",
+    "href": "index.html#criação-da-matriz-com-as-arestas",
+    "title": "Análise de Rede Social",
+    "section": "Criação da matriz com as arestas",
+    "text": "Criação da matriz com as arestas\n\ntweets$label &lt;- tolower(tweets$`Vertex 1`)\n\n### Creating a data frame from the sender-receiver objects\nrts.df &lt;- tweets %&gt;% select(`Vertex 1`,`Vertex 2`)\n\ncolnames(rts.df) &lt;- c(\"rt.sender\",\"rt.receiver\")"
+  },
+  {
+    "objectID": "index.html#ajustes-nas-tabelas-para-a-criação-do-grafo",
+    "href": "index.html#ajustes-nas-tabelas-para-a-criação-do-grafo",
+    "title": "Análise de Rede Social",
+    "section": "Ajustes nas tabelas para a criação do Grafo",
+    "text": "Ajustes nas tabelas para a criação do Grafo\n\n# Separar as contas que enviaram mensagem\nsources &lt;- rts.df %&gt;% distinct(rt.sender) %&gt;% rename(label=rt.sender)\n\n# Separar as contas que receberam mensagem\ndestination &lt;- rts.df %&gt;% distinct(rt.receiver) %&gt;% rename(label=rt.receiver)\n\n\n# Criação da Tabela de Nós (Atores), incluindo chave primária para identificação dos nós\nnodes &lt;- full_join(sources, destination,by=\"label\")\nnodes &lt;- full_join(sources, destination,by=\"label\") %&gt;% mutate(id = 1:nrow(nodes)) %&gt;% select(id,everything())\n\n\n\n# Criação da Tabela de Arestas\nedges &lt;- rts.df %&gt;% left_join(nodes, by=c(\"rt.sender\" = \"label\")) %&gt;% rename(from=\"id\")\nedges &lt;- edges %&gt;% left_join(nodes,by=c(\"rt.receiver\" = \"label\")) %&gt;% rename(to=id)\n\n\nedges &lt;- select(edges,from,to)"
+  },
+  {
+    "objectID": "index.html#criação-do-grafo",
+    "href": "index.html#criação-do-grafo",
+    "title": "Análise de Rede Social",
+    "section": "Criação do Grafo",
+    "text": "Criação do Grafo\n\nnet.tidy &lt;- tbl_graph(\n  nodes = nodes, edges = edges, directed = TRUE\n)"
+  },
+  {
+    "objectID": "index.html#criação-da-tabela-com-as-centralidades",
+    "href": "index.html#criação-da-tabela-com-as-centralidades",
+    "title": "Análise de Rede Social",
+    "section": "Criação da Tabela com as centralidades",
+    "text": "Criação da Tabela com as centralidades\n\nnet.tidy &lt;- net.tidy %&gt;%\n  activate(nodes) %&gt;%\n  mutate(PageRank = centrality_pagerank())"
+  },
+  {
+    "objectID": "index.html#gráfico-de-análise-das-centralidades",
+    "href": "index.html#gráfico-de-análise-das-centralidades",
+    "title": "Análise de Rede Social",
+    "section": "Gráfico de Análise das Centralidades",
+    "text": "Gráfico de Análise das Centralidades\n\nl= \"fr\" \n\n\nset.seed(123)\n\ng &lt;- net.tidy %&gt;%\n  activate(nodes) %&gt;%\n  mutate(PageRank = centrality_pagerank()) %&gt;%\n  mutate(community = as.factor(group_infomap())) %&gt;%\n  ggraph(layout = l) +\n  \n  labs(title = Hashtag) +\n  geom_edge_arc(alpha=.6,edge_width = 0.015,edge_colour = \"#A8A8A8\", arrow = arrow(angle = 0, length = unit(0.1, \"inches\"), ends = \"last\", type = \"closed\")) +\n  \n  geom_edge_link(width = 1, colour = \"lightgray\") +\n  geom_node_point(aes(colour = community,size=6*PageRank)) +\n  \n  geom_node_text(aes(label = label,size=1.5*PageRank), colour = \"#000000\",repel=TRUE,\n                 family = \"serif\",fontface = \"bold\") +\n  scale_size(range = c(0, 15)) + \n  \n  theme_graph(foreground = 'steelblue', fg_text_colour = 'white') + \n  theme(legend.position = \"none\") \n\ng"
+  }
+]

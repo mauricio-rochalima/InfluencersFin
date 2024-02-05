@@ -11,9 +11,11 @@ website:
 
 format:
   html:
-    theme: lumen
-    css: styles.css
-    toc: true
+     theme: lumen
+     css: styles.css
+     toc: false
+     html-table-processing: none
+
 
 editor: visual
 

@@ -7,11 +7,11 @@ website:
     left:
       - href: index.qmd
         text: Home
-      - about.qmd
-
+      - Grafos.qmd
+        
 format:
   html:
-     theme: lumen
+     theme: Flatly
      css: styles.css
      toc: false
      html-table-processing: none
